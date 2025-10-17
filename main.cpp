@@ -15,6 +15,7 @@ int launches = 0;
 int max_launches = 0;
 int period_sec = 0;
 long clk_tck;
+pid_t parent_pid;
 
 void handler(int signum) {
 
@@ -38,8 +39,8 @@ void handler(int signum) {
     // Child
     else if (pid == 0) {
         time_t now = time(NULL);
-        cout << "Child process" << (launches + 1) << ": PID = " << getpid() << ", start time = " << ctime(&now);
-        for (int i = 0; i < 100000; i++);
+        cout << "Child process" << (launches + 1) << ": PID = " << getpid() << ", start time = " << ctime(&now) << flush;
+        for (int i = 0; i < 100000000; i++);
         exit(0);
     }
     // Parent
@@ -54,7 +55,7 @@ void handler(int signum) {
         double child_user = (after.tms_cutime - before.tms_cutime) / static_cast<double>(clk_tck);
         double child_sys = (after.tms_cstime - before.tms_cstime) / static_cast<double>(clk_tck);
 
-        cout << "Parent: real time " << elapsed_real << " sec, user " << parent_user << ", sys " << parent_sys << endl;
+        cout << "Parent PID = " << parent_pid << elapsed_real << " sec, user " << parent_user << ", sys " << parent_sys << endl;
         cout << "Child: user " << child_user << ", sys " << child_sys << endl;
 
         launches++;

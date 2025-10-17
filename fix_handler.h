@@ -4,39 +4,32 @@
 #include <signal.h>       // sigaction, SIGALRM, SIGTSTP
 #include <unistd.h>       // fork, pause, getpid, sysconf
 #include <sys/wait.h>     // wait
-#include <time.h>         // time, ctime
+#include <ctime>          // time, ctime
 #include <iostream>       // cout, cerr
 #include <cstdlib>        // exit, stoi
-#include <string>
+#include <string>         // stoi
+#include <stdexcept>      // invalid_argument
 
 using namespace std;
 
-int launches = 0;
+
+volatile int launches = 0;
 int max_launches = 0;
 int period_sec = 0;
 long clk_tck;
-pid_t parent_pid;
-clock_t start_time;
 
 void handler(int sig) {
-    if (launches >= max_launches) {
-        struct tms final;
-        clock_t end_time = times(&final);
-        double total_real = (end_time - start_time) / static_cast<double>(clk_tck);
-        cout << "Parent PID = " << parent_pid << ": total real time = " << total_real << " sec" << endl;
-        struct itimerval zero = {{0, 0}, {0, 0}};
-        setitimer(ITIMER_REAL, &zero, NULL);
-        exit(0);
-    }
 
     struct tms before;
-    clock_t start = times(&before);
+    times(&before);
 
     pid_t pid = fork();
+
     if (pid == -1) {
         perror("fork failed");
-        exit(1);
-    } else if (pid == 0) {
+        exit(EXIT_FAILURE);
+    }
+    else if (pid == 0) {
         time_t now = time(NULL);
         cout << "Child process " << (launches + 1) << ": PID = " << getpid()
              << ", start time = " << ctime(&now) << flush;
@@ -44,28 +37,29 @@ void handler(int sig) {
         struct tms child_start;
         clock_t child_start_time = times(&child_start);
 
+        // Какая-то работа
         for (int i = 0; i < 100000000; i++);
 
         struct tms child_end;
         clock_t child_end_time = times(&child_end);
+
         double child_total = (child_end_time - child_start_time) / static_cast<double>(clk_tck);
         cout << "Child process " << (launches + 1) << ": total time = " << child_total << " sec" << endl;
 
-        exit(0);
-    } else {
+        exit(EXIT_SUCCESS);
+    }
+    else {
         wait(NULL);
-
         launches++;
     }
 }
-
-
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         cerr << "Usage: " << argv[0] << " period_sec num_launches" << endl;
         return EXIT_FAILURE;
     }
+
     try {
         period_sec = stoi(argv[1]);
         max_launches = stoi(argv[2]);
@@ -78,13 +72,7 @@ int main(int argc, char* argv[]) {
     }
 
     clk_tck = sysconf(_SC_CLK_TCK);
-    parent_pid = getpid();
-    struct tms dummy;
-    start_time = times(&dummy);
-
-    struct sigaction act_ignore;
-    act_ignore.sa_handler = SIG_IGN;
-    sigaction(SIGTSTP, &act_ignore, NULL);
+    pid_t parent_pid = getpid();
 
     struct sigaction act;
     act.sa_handler = handler;
@@ -97,11 +85,24 @@ int main(int argc, char* argv[]) {
     it.it_interval.tv_usec = 0;
     it.it_value.tv_sec = period_sec;
     it.it_value.tv_usec = 0;
+
+    struct tms dummy;
+    clock_t start_time = times(&dummy);
+
     setitimer(ITIMER_REAL, &it, NULL);
 
-    while (true) {
-        pause();
+    while (launches < max_launches) {
+        pause(); // Ждем сигнала
     }
+
+    struct itimerval zero = {{0, 0}, {0, 0}};
+    setitimer(ITIMER_REAL, &zero, NULL);
+
+    struct tms final_tms;
+    clock_t end_time = times(&final_tms);
+    double total_real = (end_time - start_time) / static_cast<double>(clk_tck);
+    cout << "Parent PID = " << parent_pid << ": total real time = " << total_real << " sec" << endl;
+    cout << "Program finished after " << launches << " launches." << endl;
 
     return EXIT_SUCCESS;
 }

@@ -55,8 +55,8 @@ build CMakeFiles/lab6.dir/main.cpp.o: CXX_COMPILER__lab6_unscanned_Debug /Users/
   OBJECT_DIR = CMakeFiles/lab6.dir
   OBJECT_FILE_DIR = CMakeFiles/lab6.dir
 
-build CMakeFiles/lab6.dir/fix_handler.cpp.o: CXX_COMPILER__lab6_unscanned_Debug /Users/bokachev/CLionProjects/OPPLinux/lab6/fix_handler.cpp || cmake_object_order_depends_target_lab6
-  DEP_FILE = CMakeFiles/lab6.dir/fix_handler.cpp.o.d
+build CMakeFiles/lab6.dir/fix.cpp.o: CXX_COMPILER__lab6_unscanned_Debug /Users/bokachev/CLionProjects/OPPLinux/lab6/fix.cpp || cmake_object_order_depends_target_lab6
+  DEP_FILE = CMakeFiles/lab6.dir/fix.cpp.o.d
   FLAGS = -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.0.sdk -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/lab6.dir
   OBJECT_FILE_DIR = CMakeFiles/lab6.dir
@@ -69,7 +69,7 @@ build CMakeFiles/lab6.dir/fix_handler.cpp.o: CXX_COMPILER__lab6_unscanned_Debug 
 #############################################
 # Link the executable lab6
 
-build lab6: CXX_EXECUTABLE_LINKER__lab6_Debug CMakeFiles/lab6.dir/main.cpp.o CMakeFiles/lab6.dir/fix_handler.cpp.o
+build lab6: CXX_EXECUTABLE_LINKER__lab6_Debug CMakeFiles/lab6.dir/main.cpp.o CMakeFiles/lab6.dir/fix.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.0.sdk
   OBJECT_DIR = CMakeFiles/lab6.dir
   POST_BUILD = :

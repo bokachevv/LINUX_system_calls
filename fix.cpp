@@ -74,6 +74,10 @@ int main(int argc, char* argv[]) {
     clk_tck = sysconf(_SC_CLK_TCK);
     pid_t parent_pid = getpid();
 
+    struct sigaction act_ignore;
+    act_ignore.sa_handler = SIG_IGN;
+    sigaction(SIGTSTP, &act_ignore, NULL);
+
     struct sigaction act;
     act.sa_handler = handler;
     sigemptyset(&act.sa_mask);

@@ -4,5 +4,5 @@ project(lab6)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(lab6 main.cpp
-        fix_handler.cpp
-        fix_handler.h)
+        fix.cpp
+)

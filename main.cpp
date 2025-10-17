@@ -86,6 +86,8 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
+    parent_pid = getpid();
+
     struct sigaction act_ignore;
     act_ignore.sa_handler = SIG_IGN;
     if (sigaction(SIGTSTP, &act_ignore, NULL) == -1) {

@@ -55,7 +55,7 @@ void handler(int signum) {
         double child_user = (after.tms_cutime - before.tms_cutime) / static_cast<double>(clk_tck);
         double child_sys = (after.tms_cstime - before.tms_cstime) / static_cast<double>(clk_tck);
 
-        cout << "Parent PID = " << parent_pid << elapsed_real << " sec, user " << parent_user << ", sys " << parent_sys << endl;
+        cout << "Parent PID = " << parent_pid << ": real time " << elapsed_real << " sec, " << "user " << parent_user << ", sys " << parent_sys << endl;
         cout << "Child: user " << child_user << ", sys " << child_sys << endl;
 
         launches++;

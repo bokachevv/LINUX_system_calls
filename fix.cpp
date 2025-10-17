@@ -12,17 +12,10 @@
 
 using namespace std;
 
-
-volatile int launches = 0;
-int max_launches = 0;
-int period_sec = 0;
+volatile int current_launch_num = 0;
 long clk_tck;
 
 void handler(int sig) {
-
-    struct tms before;
-    times(&before);
-
     pid_t pid = fork();
 
     if (pid == -1) {
@@ -31,26 +24,22 @@ void handler(int sig) {
     }
     else if (pid == 0) {
         time_t now = time(NULL);
-        cout << "Child process " << (launches + 1) << ": PID = " << getpid()
+        cout << "Child process " << (current_launch_num + 1) << ": PID = " << getpid()
              << ", start time = " << ctime(&now) << flush;
 
         struct tms child_start;
         clock_t child_start_time = times(&child_start);
 
         // Какая-то работа
-        for (int i = 0; i < 100000000; i++);
+        for (long i = 0; i < 200000000; i++);
 
         struct tms child_end;
         clock_t child_end_time = times(&child_end);
 
         double child_total = (child_end_time - child_start_time) / static_cast<double>(clk_tck);
-        cout << "Child process " << (launches + 1) << ": total time = " << child_total << " sec" << endl;
+        cout << "Child process " << (current_launch_num + 1) << ": total time = " << child_total << " sec" << endl;
 
         exit(EXIT_SUCCESS);
-    }
-    else {
-        wait(NULL);
-        launches++;
     }
 }
 
@@ -60,6 +49,8 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
+    int max_launches;
+    int period_sec;
     try {
         period_sec = stoi(argv[1]);
         max_launches = stoi(argv[2]);
@@ -95,8 +86,9 @@ int main(int argc, char* argv[]) {
 
     setitimer(ITIMER_REAL, &it, NULL);
 
-    while (launches < max_launches) {
-        pause(); // Ждем сигнала
+    for (current_launch_num = 0; current_launch_num < max_launches; current_launch_num++) {
+        pause();
+        wait(NULL);
     }
 
     struct itimerval zero = {{0, 0}, {0, 0}};
@@ -106,7 +98,7 @@ int main(int argc, char* argv[]) {
     clock_t end_time = times(&final_tms);
     double total_real = (end_time - start_time) / static_cast<double>(clk_tck);
     cout << "Parent PID = " << parent_pid << ": total real time = " << total_real << " sec" << endl;
-    cout << "Program finished after " << launches << " launches." << endl;
+    cout << "Program finished after " << max_launches << " launches." << endl;
 
     return EXIT_SUCCESS;
 }
